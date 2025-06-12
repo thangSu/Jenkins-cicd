@@ -5,7 +5,7 @@ void loadProperties(){
     currentBuild.result = 'ABORTED'
     error("Please select a valid environment")
   }
-  def properties = readYaml(file: 'Jenkins.yml')
+  def properties = readYaml(file: 'Jenkins.yaml')
   if (!properties.containsKey(selectEnv)) {
     currentBuild.result = 'ABORTED'
     error("Environment ${selectEnv} not found in properties file")
