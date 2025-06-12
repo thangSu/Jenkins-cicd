@@ -1,0 +1,161 @@
+
+void loadProperties(){
+  def selectEnv = params.Step1.trim().replaceAll("," , "")
+  if (selectEnv == "None") {
+    currentBuild.result = 'ABORTED'
+    error("Please select a valid environment")
+  }
+  def properties = readYaml(file: 'Jenkins.yml')
+  if (!properties.containsKey(selectEnv)) {
+    currentBuild.result = 'ABORTED'
+    error("Environment ${selectEnv} not found in properties file")
+  }
+  envProperties = properties[selectEnv]
+  //degugging
+  echo "Environment Properties: ${selectEnv}"
+  echo "AWS account ID: ${envProperties['aws_account_id']}"
+  echo "AWS region: ${envProperties['aws_region']}"
+  echo "IAM role: ${envProperties['iam_role']}"
+  echo "MySQL URL: ${envProperties['mysql_url']}"
+  echo "MongoDB URL: ${envProperties['mongodb_url']}"
+  echo "Nexus URL: ${envProperties['nexus_url']}"
+  echo "Nexus Repository: ${envProperties['nexus_repository']}"
+  echo "Nexus credential ID: ${envProperties['nexus_credential_id']}"
+  echo "Vault URL: ${envProperties['vault_url']}"
+  echo "Vault Secret Path: ${envProperties['vault_secret_path']}"
+  echo "Vault Path: ${envProperties['vault_path']}"
+}
+
+node {
+  properties([
+    parameters([
+      [$class: 'DynamicReferenceParameter',
+        name: 'Step1',
+        description: 'Choose Environment',
+        choiceType: 'ET_FORMATTED_HTML',
+        script: [
+          $class: 'GroovyScript',
+          fallbackScript: [
+            classpath: [],
+            sandbox: true,
+            script: 'return ["No Environment Found"]'
+          ],
+          script: [
+            classpath: [],
+            sandbox: true,
+            script: """
+              return '''
+                <p><b>Choose one Environment from the list below</b><br>
+                <select style="width: 25rem" name="value" class="jenkins-input">
+                  <option value="None">-----Select------</option>
+                  <option value="dev">dev</option>
+                  <option value="uat">uat</option>
+                  <option value="prod">prod</option>
+                </select></p>
+              '''
+              """
+          ]
+        ]
+      ],
+      [$class: 'DynamicReferenceParameter',
+        name: 'Step2',
+        description: 'Choose Action',
+        choiceType: 'ET_FORMATTED_HTML',
+        script: [
+          $class: 'GroovyScript',
+          fallbackScript: [
+            classpath: [],
+            sandbox: true,
+            script: 'return ["Error: loading actions"]'
+          ],
+          script: [
+            classpath: [],
+            sandbox: true,
+            script: """
+                return '''
+                  <p><b> Choose one Action from the list below</b><br>
+                  <select style="width: 25rem" name="value" class="jenkins-input">
+                    <option value="None">-----Select------</option>
+                    <option value="ValidateApp">1. Validate Application</option>
+                    <option value="DeployApp">2. Deploy Application</option>
+                    <option value="StopApp">3. Stop Application </option>
+                    <option value="StartApp">4. Start Application</option>
+                    <option value="RestartApp">5. Restart Application</option>
+                    <option value="RollbackApp">6. Rollback Application</option>
+                    <option value="ValidateMySQL">7. Validate MySQL</option>
+                    <option value="DeployMySQL">8. Deploy MySQL</option>
+                    <option value="RollbackMySQL">9. Rollback MySQL</option>
+                    <option value="ValidateMongoDB">10. Validate MongoDB</option>
+                    <option value="DeployMongoDB">11. Deploy MongoDB</option>
+                    <option value="RollbackMongoDB">12. Rollback MongoDB</option>
+                    <option value="DeployWindowsService">13. Deploy Windows Service</option>
+                    <option value="RollbackWindowsService">14. Rollback Windows Service</option>
+                  </select></p>
+                '''
+            """
+          ]
+        ]
+      ],
+      [
+        $class: 'DynamicReferenceParameter',
+        name: 'Step3',
+        description: 'Choose Application',
+        referencedParameters: 'Step2',
+        choiceType: 'ET_FORMATTED_HTML',
+        script: [
+          $class: 'GroovyScript',
+          fallbackScript: [
+            classpath: [],
+            sandbox: true,
+            script: 'return ["Error: loading application details"]'
+          ],
+          script: [
+            classpath: [],
+            sandbox: true,
+            script: """
+              if (Step2 == 'DeployApp' || Step2 == 'RollbackApp') {
+                return '''
+                <p><b>Application Artifacts name:</b><input style="width: 100%;" type="text" name="value" class="jenkins-input" value="" placeholder="Enter Application Artifacts name"></p>
+                '''
+              }
+              else if (Step2 == 'RollbackApp') {
+                return '''
+                <p>No details required for Rollback Application</p>
+                '''
+              }
+              else if (Step2 == 'DeployMySQL' || Step2 == 'RollbackMySQL' || Step2 == 'ValidateMySQL') {
+                return '''
+                <p>No details required for MySQL</p>
+                '''
+              }
+              else if (Step2 == 'DeployMongoDB' || Step2 == 'RollbackMongoDB' || Step2 == 'ValidateMongoDB') {
+                return '''
+                <p>No details required for MongoDB</p>
+                '''
+              }
+              else if (Step2 == 'DeployWindowsService' ) {
+                return '''
+                <p><b>Windows Service Artifacts name:</b><input style="width: 100%;" type="text" name="value" class="jenkins-input" value="" placeholder="Enter Windows Service name"></p>
+                '''
+              }
+              else {
+                return '''
+                <p>No additional details required</p>
+                '''
+              }
+              """
+            ]
+          ]
+        ]
+      ]
+    )
+  ])
+  def step1 = params.Step1.trim().replaceAll(",", "")
+  def step2 = params.Step2.trim().replaceAll(",", "")
+  def step3 = params.Step3.trim().replaceAll(",", "")
+  // validate your choices
+  echo "Selected Environment: ${step1}"
+  echo "Selected Action: ${step2}"
+  echo "Application Details: ${step3}"
+  loadProperties()
+}

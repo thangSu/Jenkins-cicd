@@ -1,0 +1,48 @@
+dev:
+  #aws
+  aws_account_id: "123456789012"
+  aws_region: "ap-southeast-1"
+  role_name: jenkins-dso-cross-account-role
+  #database
+  mysql_addr: jdbc:mysql://jenkins-mysql:3306/jenkins
+  mongo_addr: mongodb://jenkins-mongo:27017/jenkins
+  # nexsus
+  nexus_credentials_id: nexus-jenkins-credentials
+  nexus_url: http://dev.nexus:8081
+  nexus_repository: raw-spt-hosted
+  # vault
+  vault_credentials_id: vault-dev-credentials
+  vault_addr: http://vault:8200
+  vault_path: kv2/dev-app/windowsapp/dev
+uat:
+  #aws
+  aws_account_id: "123456789012"
+  aws_region: "ap-southeast-1"
+  role_name: jenkins-dso-cross-account-role
+  #database
+  mysql_addr: jdbc:mysql://jenkins-mysql:3306/jenkins
+  mongo_addr: mongodb://jenkins-mongo:27017/jenkins
+  # nexsus
+  nexus_credentials_id: nexus-jenkins-credentials
+  nexus_url: http://dev.nexus:8081
+  nexus_repository: raw-spt-hosted
+  # vault
+  vault_credentials_id: vault-dev-credentials
+  vault_addr: http://vault:8200
+  vault_path: kv2/uat-app/windowsapp/uat
+prod:
+  #aws
+  aws_account_id: "123456789012"
+  aws_region: "ap-southeast-1"
+  role_name: jenkins-dso-cross-account-role
+  #database
+  mysql_addr: jdbc:mysql://jenkins-mysql:3306/jenkins
+  mongo_addr: mongodb://jenkins-mongo:27017/jenkins
+  # nexsus
+  nexus_credentials_id: nexus-jenkins-credentials
+  nexus_url: http://nexus:8081
+  nexus_repository: raw-spt-hosted
+  # vault
+  vault_credentials_id: vault-prod-credentials
+  vault_addr: http://prod.vault:8200
+  vault_path: kv2/prod-app/windowsapp/prod
